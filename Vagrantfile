@@ -1,6 +1,62 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+$docker = <<-'SHELL'
+# install docker
+# https://docs.docker.com/engine/install/ubuntu/
+sudo apt-get install -y \
+  ca-certificates \
+  curl \
+  gnupg \
+  lsb-release
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo \
+"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+# docker runtime setting
+# https://devops.stackexchange.com/questions/15162/it-seems-like-the-kubelet-isnt-running-or-healthy
+cat <<EOF | sudo tee /etc/docker/daemon.json
+{
+  "exec-opts": ["native.cgroupdriver=systemd"]
+}
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+SHELL
+
+$k8s = <<-'SHELL'
+# install kubernetes
+# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+# https://stackoverflow.com/questions/52119985/kubeadm-init-shows-kubelet-isnt-running-or-healthy
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+br_netfilter
+EOF
+
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+
+sudo sysctl --system
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl
+sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+# create k8s cluster
+# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
+kubeadm init
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+export KUBECONFIG=/etc/kubernetes/admin.conf
+SHELL
+
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
@@ -63,58 +119,10 @@ Vagrant.configure("2") do |config|
   # Enable provisioning with a shell script. Additional provisioners such as
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
   # documentation for more information about their specific syntax and use.
-  config.vm.provision "shell", inline: <<-SHELL
-    apt-get update
-    apt-get install -y apache2
-    # install docker
-    # https://docs.docker.com/engine/install/ubuntu/
-    sudo apt-get install -y \
-      ca-certificates \
-      curl \
-      gnupg \
-      lsb-release
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    sudo apt-get update
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-    # docker runtime setting
-    # https://devops.stackexchange.com/questions/15162/it-seems-like-the-kubelet-isnt-running-or-healthy
-    sudo mkdir /etc/docker
-    cat <<EOF | sudo tee /etc/docker/daemon.json
-{
-  "exec-opts": ["native.cgroupdriver=systemd"]
-}
-EOF
-    sudo systemctl daemon-reload
-    sudo systemctl restart docker
-    # install kubernetes
-    # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
-    # https://stackoverflow.com/questions/52119985/kubeadm-init-shows-kubelet-isnt-running-or-healthy
-    cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
-    br_netfilter
-EOF
-    cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
-net.bridge.bridge-nf-call-ip6tables = 1
-net.bridge.bridge-nf-call-iptables = 1
-EOF
-    sudo sysctl --system
-    sudo apt-get update
-    sudo apt-get install -y apt-transport-https ca-certificates curl
-    sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
-    echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
-    sudo apt-get update
-    sudo apt-get install -y kubelet kubeadm kubectl
-    sudo apt-mark hold kubelet kubeadm kubectl
-    # create k8s cluster
-    # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
-    kubeadm init
-    mkdir -p $HOME/.kube
-    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-    sudo chown $(id -u):$(id -g) $HOME/.kube/config
-    export KUBECONFIG=/etc/kubernetes/admin.conf
-  SHELL
 
-  config.vm.provision "docker"
+  # refactoring shell script
+  # https://www.vagrantup.com/docs/provisioning/shell
+  config.vm.provision "shell", inline: $docker
+
+  config.vm.provision "shell", inline: $k8s
 end

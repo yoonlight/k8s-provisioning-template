@@ -122,6 +122,13 @@ Vagrant.configure("2") do |config|
 
   # refactoring shell script
   # https://www.vagrantup.com/docs/provisioning/shell
+  config.vm.provision "shell", inline: <<-'SHELL'
+  # Chanage apt mirror site location
+  cd /etc/apt && \
+  sed -i 's/archive.ubuntu.com/mirror.kakao.com/g' sources.list
+  apt update
+  SHELL
+
   config.vm.provision "shell", inline: $docker
 
   config.vm.provision "shell", inline: $k8s

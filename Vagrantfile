@@ -143,6 +143,7 @@ Vagrant.configure("2") do |config|
     master.vm.hostname = "master"
     master.vm.network "private_network", ip: "192.167.33.100"
     master.vm.provision "shell", inline: $k8s_master
+    master.vm.provision "helm", type: "shell", path: "script/helm.sh"
   end
 
   (1..3).each do |i|

@@ -29,10 +29,13 @@ vagrant provision
 - [x] init vagrant
 - [x] set docker
 - [x] set kubernetes
-- [ ] set kubernetes multi nodes cluster
+- [x] set kubernetes multi nodes cluster
+- [ ] k8s worker node join automation
 
 ## Reference
 
 - [1] <https://www.vagrantup.com/docs/vagrantfile>
 - [2] <https://www.vagrantup.com/docs/cli>
 - [3] <https://stackoverflow.com/questions/11161577/which-command-to-get-vagrantfile-changes-on-an-instance>
+- <https://ugurakgul.medium.com/creating-a-local-kubernetes-cluster-with-vagrant-ba591ab70ee2>
+- <https://github.com/sysnet4admin/_Book_k8sInfra>

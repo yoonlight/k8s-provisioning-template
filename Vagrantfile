@@ -34,7 +34,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker
 SHELL
 
-$k8s = <<-'SHELL'
+$k8s_init = <<-'SHELL'
 # install kubernetes
 # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 # https://stackoverflow.com/questions/52119985/kubeadm-init-shows-kubelet-isnt-running-or-healthy
@@ -55,6 +55,9 @@ echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https:/
 sudo apt-get update
 sudo apt-get install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
+SHELL
+
+$k8s_master = <<-'SHELL'
 # create k8s cluster
 # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
 kubeadm init
@@ -133,5 +136,5 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "shell", inline: $docker
 
-  config.vm.provision "shell", inline: $k8s
+  config.vm.provision "shell", inline: $k8s_init
 end

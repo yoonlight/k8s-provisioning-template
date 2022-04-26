@@ -1,6 +1,13 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+$apt = <<-'SHELL'
+# Chanage apt mirror site location
+cd /etc/apt && \
+sed -i 's/archive.ubuntu.com/mirror.kakao.com/g' sources.list
+apt update
+SHELL
+
 $docker = <<-'SHELL'
 # install docker
 # https://docs.docker.com/engine/install/ubuntu/
@@ -122,12 +129,7 @@ Vagrant.configure("2") do |config|
 
   # refactoring shell script
   # https://www.vagrantup.com/docs/provisioning/shell
-  config.vm.provision "shell", inline: <<-'SHELL'
-  # Chanage apt mirror site location
-  cd /etc/apt && \
-  sed -i 's/archive.ubuntu.com/mirror.kakao.com/g' sources.list
-  apt update
-  SHELL
+  config.vm.provision "shell", inline: $apt
 
   config.vm.provision "shell", inline: $docker
 

@@ -62,7 +62,7 @@ $k8s_master = <<-'SHELL'
 # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
 # Installing a Pod network add-on
 # https://projectcalico.docs.tigera.io/getting-started/kubernetes/quickstart
-kubeadm init --pod-network-cidr=192.168.0.0/16 --apiserver-advertise-address=192.168.33.100
+kubeadm init --pod-network-cidr=192.168.0.0/16 --apiserver-advertise-address=192.167.33.100
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
@@ -141,14 +141,14 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "master" do |master|
     master.vm.hostname = "master"
-    master.vm.network "private_network", ip: "192.168.33.100",  virtualbox__intnet: true
+    master.vm.network "private_network", ip: "192.167.33.100"
     master.vm.provision "shell", inline: $k8s_master
   end
 
   (1..3).each do |i|
     config.vm.define "worker-#{i}" do |worker|
       worker.vm.hostname = "worker-#{i}"
-      worker.vm.network "private_network", ip: "192.168.33.1#{i}", virtualbox__intnet: true
+      worker.vm.network "private_network", ip: "192.167.33.1#{i}"
     end
   end
 

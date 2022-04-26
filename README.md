@@ -24,6 +24,13 @@ vagrant up --provision
 vagrant provision
 ```
 
+- provison specific scirpt [4]
+
+```shell
+# ex) master.vm.provision "helm", type: "shell", path: "script/helm.sh"
+vagrant provision master --provision-with helm
+```
+
 ## Todo
 
 - [x] init vagrant
@@ -38,6 +45,7 @@ vagrant provision
 - [1] <https://www.vagrantup.com/docs/vagrantfile>
 - [2] <https://www.vagrantup.com/docs/cli>
 - [3] <https://stackoverflow.com/questions/11161577/which-command-to-get-vagrantfile-changes-on-an-instance>
+- [4] <https://github.com/hashicorp/vagrant/issues/11287>
 
 ### Tutorial
 

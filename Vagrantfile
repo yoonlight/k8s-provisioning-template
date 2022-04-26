@@ -60,11 +60,16 @@ SHELL
 $k8s_master = <<-'SHELL'
 # create k8s cluster
 # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
-kubeadm init
+# Installing a Pod network add-on
+# https://projectcalico.docs.tigera.io/getting-started/kubernetes/quickstart
+kubeadm init --pod-network-cidr=192.168.0.0/16 --apiserver-advertise-address=192.168.33.100
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 export KUBECONFIG=/etc/kubernetes/admin.conf
+kubectl create -f https://projectcalico.docs.tigera.io/manifests/tigera-operator.yaml
+kubectl create -f https://projectcalico.docs.tigera.io/manifests/custom-resources.yaml
+kubectl get nodes
 SHELL
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure

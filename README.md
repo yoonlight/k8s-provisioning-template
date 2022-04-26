@@ -31,6 +31,7 @@ vagrant provision
 - [x] set kubernetes
 - [x] set kubernetes multi nodes cluster
 - [ ] k8s worker node join automation
+- [ ] refactor shell script to external bash file
 
 ## Reference
 
